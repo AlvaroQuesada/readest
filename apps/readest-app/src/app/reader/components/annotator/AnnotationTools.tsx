@@ -6,8 +6,7 @@ import { FiShare } from 'react-icons/fi';
 import { FiImage } from 'react-icons/fi';
 import { PiHighlighterFill } from 'react-icons/pi';
 import { LuBookA } from 'react-icons/lu';
-import { BsPencilSquare } from 'react-icons/bs';
-import { BsTranslate } from 'react-icons/bs';
+import { BsPencilSquare, BsTranslate, BsChatDots } from 'react-icons/bs';
 import { FaHeadphones } from 'react-icons/fa6';
 import { IoIosBuild } from 'react-icons/io';
 import { AnnotationToolType } from '@/types/annotator';
@@ -110,6 +109,13 @@ export const annotationToolButtons = createAnnotationToolButtons([
     label: _('Quote Card'),
     tooltip: _('Create a quote card image from the selection'),
     Icon: FiImage,
+  },
+  {
+    type: 'aichat',
+    label: _('AI Chat'),
+    tooltip: _('Ask AI about selection'),
+    Icon: BsChatDots,
+    quickAction: true,
   },
 ]);
 

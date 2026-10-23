@@ -99,6 +99,8 @@ import DictionaryPopup from './DictionaryPopup';
 import DictionarySheet from './DictionarySheet';
 import NoteEditorSheet from './NoteEditorSheet';
 import TranslatorPopup from './TranslatorPopup';
+import AIChatModal from './AIChatModal';
+import { getSelectionContext, getAgentChatConfig } from '@/services/ai/agentChatService';
 import useShortcuts from '@/hooks/useShortcuts';
 import ProofreadPopup from './ProofreadPopup';
 import { setProofreadRulesVisibility } from '@/app/reader/components/ProofreadRules';
@@ -200,6 +202,7 @@ const Annotator: React.FC<{ bookKey: string; contentInsets: Insets; gridInsets?:
   const [showDictionaryPopup, setShowDictionaryPopup] = useState(false);
   const [showDeepLPopup, setShowDeepLPopup] = useState(false);
   const [showProofreadPopup, setShowProofreadPopup] = useState(false);
+  const [showAIChatModal, setShowAIChatModal] = useState(false);
   const [trianglePosition, setTrianglePosition] = useState<Position>();
   const [annotPopupPosition, setAnnotPopupPosition] = useState<Position>();
   // The side of the tapped word the footnote popup took, when one is open: a
@@ -305,7 +308,7 @@ const Annotator: React.FC<{ bookKey: string; contentInsets: Insets; gridInsets?:
     !!selection?.text &&
     selection.text.trim().length > 0;
   const globalToggleActive = !!currentAnnotation?.global;
-  const annotPopupMaxWidth = Math.min(useResponsiveSize(300), maxWidth);
+  const annotPopupMaxWidth = Math.min(useResponsiveSize(440), maxWidth);
   const annotPopupToolSize = useResponsiveSize(44);
   const toolbarToolTypes = getToolbarToolTypes(viewSettings.annotationToolbarItems, canShare);
   const highlightOptionsGap = toolbarToolTypes.length <= 4 ? 4 : 8;
@@ -1958,6 +1961,13 @@ const Annotator: React.FC<{ bookKey: string; contentInsets: Insets; gridInsets?:
     setShowDeepLPopup(true);
   };
 
+  const handleAIChat = () => {
+    if (!selection || !selection.text) return;
+    setShowAnnotPopup(false);
+    void suppressNativeSelectionHandles();
+    setShowAIChatModal(true);
+  };
+
   // `oneTime` is required rather than defaulted: it decides whether this reads
   // the selection and stops or starts an open-ended session from it, and every
   // entry point here means the former. Defaulting it silently turned Ctrl/Cmd+R
@@ -2659,6 +2669,8 @@ const Annotator: React.FC<{ bookKey: string; contentInsets: Insets; gridInsets?:
         return { tooltipText: _(label), Icon, onClick: handleShare };
       case 'quotecard':
         return { tooltipText: _(label), Icon, onClick: () => void handleQuoteCard() };
+      case 'aichat':
+        return { tooltipText: _(label), Icon, onClick: handleAIChat };
       default:
         return null;
     }
@@ -2711,7 +2723,11 @@ const Annotator: React.FC<{ bookKey: string; contentInsets: Insets; gridInsets?:
   // toolbar: hide them while any of those is open, and let them come back with
   // the toolbar (or go with the dismiss).
   const overlaySurfaceOpen =
-    showDictionaryPopup || showDeepLPopup || showProofreadPopup || !!noteEditorTarget;
+    showDictionaryPopup ||
+    showDeepLPopup ||
+    showProofreadPopup ||
+    showAIChatModal ||
+    !!noteEditorTarget;
 
   // Below `sm` (or short landscape) the note editor is a bottom sheet rather
   // than a popup pinned to the selection: an anchored editor would sit under
@@ -2880,6 +2896,19 @@ const Annotator: React.FC<{ bookKey: string; contentInsets: Insets; gridInsets?:
           fontFamilies={quoteCard.fontFamilies}
           defaultFont={quoteCard.defaultFont}
           onClose={handleCloseQuoteCard}
+        />
+      )}
+      {showAIChatModal && selection && (
+        <AIChatModal
+          isOpen={showAIChatModal}
+          onClose={() => {
+            setShowAIChatModal(false);
+            handleDismissPopupShowToolbar();
+          }}
+          selectedText={selection.text || ''}
+          contextText={getSelectionContext(selection.range, getAgentChatConfig().contextScope)}
+          bookTitle={bookData?.book?.title}
+          bookAuthor={bookData?.book?.author || undefined}
         />
       )}
       {showExportDialog && exportData && bookData.book && (

@@ -11,13 +11,14 @@ import {
   shouldShowHighlightOptions,
   supportsProofread,
 } from '@/utils/annotationToolbar';
+import type { AnnotationToolType } from '@/types/annotator';
 
 describe('annotationToolbar helpers', () => {
   test('ALL_ANNOTATION_TOOL_TYPES matches the button registry order', () => {
     expect(ALL_ANNOTATION_TOOL_TYPES).toEqual(annotationToolButtons.map((b) => b.type));
   });
 
-  test('default toolbar is the eight non-share tools in canonical order', () => {
+  test('default toolbar is the non-share tools in canonical order', () => {
     expect(DEFAULT_ANNOTATION_TOOLBAR_ITEMS).toEqual([
       'copy',
       'highlight',
@@ -25,6 +26,7 @@ describe('annotationToolbar helpers', () => {
       'search',
       'dictionary',
       'translate',
+      'aichat',
       'tts',
       'proofread',
     ]);
@@ -56,7 +58,7 @@ describe('annotationToolbar helpers', () => {
   });
 
   test('getAvailableToolTypes returns canonical-order complement', () => {
-    expect(getAvailableToolTypes(['copy'], true)).toEqual([
+    expect(getAvailableToolTypes(['copy'], true)).toEqual<AnnotationToolType[]>([
       'copylink',
       'highlight',
       'annotate',
@@ -67,6 +69,7 @@ describe('annotationToolbar helpers', () => {
       'proofread',
       'share',
       'quotecard',
+      'aichat',
     ]);
   });
 
